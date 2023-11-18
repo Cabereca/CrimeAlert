@@ -1,5 +1,5 @@
-export interface UserDTO {
-  id: number;
+export interface IUser {
+  _id: number;
   email: string;
   name: string;
   password: string;

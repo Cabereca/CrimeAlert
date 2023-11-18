@@ -1,55 +1,41 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../database/sequelize';
+import { Schema } from 'mongoose';
+import mongoose from '../database/mongoose';
+import { IUser } from '../dtos/UserDTO';
 
-const User = sequelize.define('user', {
-  id: {
-    type: DataTypes.UUID,
-    primaryKey: true,
-    allowNull: false,
-    defaultValue: DataTypes.UUIDV4
-  },
-  email: {
-    type: DataTypes.STRING(100),
-    allowNull: false,
-    unique: true,
-    validate: {
-      isEmail: true
+const UserSchema = new Schema<IUser>(
+  {
+    email: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    name: {
+      type: String,
+      required: true
+    },
+    password: {
+      type: String,
+      required: true
+    },
+    birthDate: {
+      type: Date
+    },
+    country: {
+      type: String
+    },
+    city: {
+      type: String
+    },
+    adress: {
+      type: String
+    },
+    phone: {
+      type: String
     }
   },
-  name: {
-    type: DataTypes.STRING(100),
-    allowNull: false
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  birthDate: {
-    type: DataTypes.DATEONLY,
-    allowNull: true
-  },
-  country: {
-    type: DataTypes.STRING(100),
-    allowNull: true
-  },
-  city: {
-    type: DataTypes.STRING(100),
-    allowNull: true
-  },
-  adress: {
-    type: DataTypes.STRING(100),
-    allowNull: true
-  },
-  phone: {
-    type: DataTypes.STRING(100),
-    allowNull: true
-  },
-  createdAt: {
-    type: DataTypes.DATE
-  },
-  updatedAt: {
-    type: DataTypes.DATE
-  }
-});
+  { timestamps: true }
+);
 
-export { User };
+const User = mongoose.model('User', UserSchema);
+
+export { User, UserSchema };

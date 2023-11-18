@@ -1,60 +1,56 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../database/sequelize';
-import { User } from './User';
+import { Types, Model, Schema } from 'mongoose';
+import mongoose from '../database/mongoose';
+import { IOcurrency, IOcurrencyMethods } from '../dtos/OcurrencyDTO';
 
-const Ocurrency = sequelize.define('ocurrency', {
-  id: {
-    type: DataTypes.UUID,
-    primaryKey: true,
-    allowNull: false,
-    defaultValue: DataTypes.UUIDV4
-  },
-  userId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-    references: {
-      model: 'users',
-      key: 'id'
+type OcurrencyModel = Model<IOcurrency, {}, IOcurrencyMethods>;
+
+const OcurrencySchema = new Schema<
+  IOcurrency,
+  OcurrencyModel,
+  IOcurrencyMethods
+>(
+  {
+    userId: {
+      type: Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    title: String,
+    type: String,
+    date: {
+      type: Date,
+      required: true
+    },
+    time: {
+      type: String,
+      required: true,
+      default: '00:00'
+    },
+    public: {
+      type: Boolean,
+      required: true
+    },
+    location: {
+      type: {
+        type: String,
+        required: true,
+        enum: ['Point'],
+        default: 'Point'
+      },
+      coordinates: {
+        type: [Number],
+        required: true,
+        index: '2dsphere'
+      }
     }
   },
-  title: {
-    type: DataTypes.STRING(100),
-    allowNull: false
-  },
-  type: {
-    type: DataTypes.STRING(100),
-    allowNull: false
-  },
-  date: {
-    type: DataTypes.DATE,
-    allowNull: false
-  },
-  time: {
-    type: DataTypes.STRING(100),
-    allowNull: false,
-    defaultValue: '00:00'
-  },
-  public: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false
-  },
-  location: {
-    type: DataTypes.GEOMETRY,
-    allowNull: false
-  },
-  createdAt: {
-    type: DataTypes.DATE
-  },
-  updatedAt: {
-    type: DataTypes.DATE
-  }
+  { timestamps: true }
+);
+OcurrencySchema.method('getLatLng', function (): [number, number] {
+  const { coordinates } = this.location;
+  return [coordinates[0], coordinates[1]];
 });
 
-Ocurrency.belongsTo(User, { foreignKey: 'userId' });
+const Ocurrency = mongoose.model('Ocurrency', OcurrencySchema);
 
-(async () => {
-  await User.sync();
-  await Ocurrency.sync();
-})();
-
-export { Ocurrency };
+export { Ocurrency, OcurrencySchema };

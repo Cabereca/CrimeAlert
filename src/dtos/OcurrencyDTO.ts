@@ -1,18 +1,20 @@
-export type OcurrencyDTO = {
-  id: string;
-  userId: string;
+import { Types } from 'mongoose';
+
+export interface IOcurrency {
+  _id: Types.UUID;
+  userId: String;
   title: string;
   type: OcurrencyType;
   date: Date;
   time: string;
   location: {
-    LNG: number;
-    LTD: number;
+    type: string;
+    coordinates: [number, number];
   };
   public: boolean;
   createdAt: Date;
   updatedAt: Date;
-};
+}
 
 enum OcurrencyType {
   theft,
@@ -21,4 +23,8 @@ enum OcurrencyType {
   kidnapping,
   vandalism,
   other
+}
+
+export interface IOcurrencyMethods {
+  getLatLng(): [number, number];
 }
