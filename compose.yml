@@ -1,15 +1,13 @@
 version: '3.4'
 services:
-  postgis:
-    image: docker.io/postgis/postgis:latest
-    container_name: postgis
+   mongodb:
+    image: docker.io/mongo
+    container_name: mongodb
     restart: always
-    environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
     ports:
-      - '5432:5432'
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_DB_PASSWORD}
     volumes:
-      - ./database/data/postgis:/var/lib/postgresql/data
-      - ./database/scripts/create.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./mongo-data:/data/db
