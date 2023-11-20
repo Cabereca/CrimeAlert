@@ -25,9 +25,9 @@ const update = async (req: Request, res: Response) => {
   return res.send(updatedUser);
 };
 
-const destroy = (req: Request, res: Response) => {
+const destroy = async (req: Request, res: Response) => {
   const { email } = req.params;
-  deleteUser(email);
+  await deleteUser(email);
   return res.status(204).send();
 };
 

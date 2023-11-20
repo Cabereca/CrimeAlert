@@ -1,10 +1,6 @@
 import { User } from '../models/User';
-import { UserDTO } from '../dtos/UserDTO';
-import {
-  BadRequestError,
-  InternalServerError,
-  NotFoundError
-} from '../helpers/api-errors';
+import { IUser } from '../dtos/UserDTO';
+import { BadRequestError, InternalServerError } from '../helpers/api-errors';
 import jwt from 'jsonwebtoken';
 import { hash } from 'bcrypt';
 
@@ -23,23 +19,19 @@ const generateToken = ({ email }: TokenType) => {
 
 const findUser = async (email: string) => {
   const user = await User.findOne({
-    where: {
-      email
-    }
+    email: email
   });
   if (!user) {
     throw new BadRequestError('User Not Found');
   }
-  const { password, ...userWithoutPassword } = user.dataValues;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { password, ...userWithoutPassword } = user;
   return userWithoutPassword;
 };
 
-const createUser = async (user: UserDTO) => {
-  const userExists = await User.findOne({
-    where: {
-      email: user.email
-    }
-  });
+const createUser = async (user: IUser) => {
+  const userExists = await findUser(user.email);
   if (userExists) {
     throw new BadRequestError('User already exists');
   }
@@ -51,34 +43,36 @@ const createUser = async (user: UserDTO) => {
     country: user.country,
     city: user.city,
     adress: user.adress,
-    phone: user.phone,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt
+    phone: user.phone
   });
   if (!createdUser) {
     throw new InternalServerError('Error creating user');
   }
-  const { password, ...userWithoutPassword } = createdUser.dataValues;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { password, ...userWithoutPassword } = createdUser;
   const token = generateToken({ email: user.email });
   return { user: { ...userWithoutPassword }, token };
 };
 
-const updateUser = async (email: string, userData: Partial<UserDTO>) => {
-  const user = await User.findOne({ where: { email } });
+const updateUser = async (email: string, userData: Partial<IUser>) => {
+  const user = await User.findOne({
+    email: email
+  });
   if (!user) {
-    throw new BadRequestError('User already exists');
+    throw new BadRequestError('User not exists');
   }
-  const updatedUser = await user.update(userData);
+  const updatedUser = await user.updateOne(userData);
   if (!updatedUser) {
     throw new InternalServerError('Error updating user');
   }
-  const { password, ...userWithoutPassword } = updatedUser.dataValues;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { password, ...userWithoutPassword } = updatedUser;
 
   return userWithoutPassword;
 };
 
 const deleteUser = async (email: string) => {
-  await User.destroy({ where: { email } });
+  await User.findOneAndDelete({ email });
   return;
 };
 
