@@ -3,7 +3,8 @@ import {
   CreateOcurrency,
   DeleteOcurrency,
   GetPublicOccurrecies,
-  GetUserOccurrecies
+  GetUserOccurrecies,
+  UpdateOcurrency
 } from '../services/ocurrencyServices';
 
 const index = async (req: Request, res: Response) => {
@@ -23,6 +24,13 @@ const create = async (req: Request, res: Response) => {
   return res.status(201).send(createdOcurrency);
 };
 
+const update = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const newData = req.body;
+  const updatedOcurrency = await UpdateOcurrency(id, newData);
+  return res.send(updatedOcurrency);
+};
+
 const destroy = async (req: Request, res: Response) => {
   const { id } = req.params;
   await DeleteOcurrency(id);
@@ -33,5 +41,6 @@ export const OcurrencyController = {
   index,
   userOcurrencies,
   create,
+  update,
   destroy
 };
