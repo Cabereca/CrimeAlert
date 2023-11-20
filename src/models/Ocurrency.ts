@@ -1,4 +1,4 @@
-import { Types, Model, Schema } from 'mongoose';
+import { Model, Schema } from 'mongoose';
 import mongoose from '../database/mongoose';
 import { IOcurrency, IOcurrencyMethods } from '../dtos/OcurrencyDTO';
 
@@ -11,7 +11,7 @@ const OcurrencySchema = new Schema<
 >(
   {
     userId: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'User',
       required: true
     },

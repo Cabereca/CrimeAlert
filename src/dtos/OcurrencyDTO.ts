@@ -1,8 +1,8 @@
-import { Types } from 'mongoose';
+import { Schema } from 'mongoose';
 
 export interface IOcurrency {
-  _id: Types.UUID;
-  userId: String;
+  _id: string;
+  userId: Schema.Types.ObjectId;
   title: string;
   type: OcurrencyType;
   date: Date;
