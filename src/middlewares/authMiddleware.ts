@@ -17,14 +17,13 @@ export const authMiddleware = async (
   const [, token] = authorization.split(' ');
   const { email } = jwt.verify(token, process.env.JWT_SECRET || '') as jwtDTO;
   const user = await User.findOne({
-    where: {
-      email
-    }
+    email: email
   });
   if (!user) {
     throw new NotFoundError('User not Found');
   }
-  const { password, ...userWithoutPassword } = user.dataValues;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { password, ...userWithoutPassword } = user;
   req.user = userWithoutPassword;
   next();
 };

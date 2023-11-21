@@ -31,7 +31,9 @@ const findUser = async (email: string) => {
 };
 
 const createUser = async (user: IUser) => {
-  const userExists = await findUser(user.email);
+  const userExists = await User.findOne({
+    email: user.email
+  });
   if (userExists) {
     throw new BadRequestError('User already exists');
   }

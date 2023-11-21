@@ -3,13 +3,14 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const url = process.env.MONGO_DB_URL as string;
+const url = process.env.MONGO_ATLAS_URL as string;
 
-main().catch((err) => console.log(err));
+const connect = async function () {
+  await mongoose
+    .connect(url)
+    .then(() => console.log('Conectado com o Mongo'))
+    .catch((err) => console.log(err));
+};
 
-async function main() {
-  await mongoose.connect(url);
-  console.log('Conectado com o Mongo');
-}
-
+connect();
 export default mongoose;

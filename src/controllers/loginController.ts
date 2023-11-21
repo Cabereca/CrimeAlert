@@ -7,22 +7,18 @@ import { generateToken } from '../services/userServices';
 const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const user = await User.findOne({
-    where: {
-      email
-    }
+    email: email
   });
   if (!user) {
     throw new NotFoundError('Cade o menino de papai');
   }
-  const verifyPassword = await bcrypt.compare(
-    password,
-    user.getDataValue('password')
-  );
+  const verifyPassword = await bcrypt.compare(password, user.password);
   if (!verifyPassword) {
     throw new UnauthorizedError('Vai timbora carniça!!');
   }
   const token = generateToken({ email });
-  const { password: _, ...userWithoutPassword } = user.dataValues;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { password: _, ...userWithoutPassword } = user;
 
   return res.send({
     userWithoutPassword,

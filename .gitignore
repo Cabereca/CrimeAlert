@@ -3,3 +3,4 @@ mongo-data/
 .env
 *.scss
 *.css.map
+teste.http
