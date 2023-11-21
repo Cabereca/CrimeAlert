@@ -7,7 +7,9 @@ const GetPublicOccurrecies = async () => {
   const ocurrency = await Ocurrency.find({
     public: true
   });
-  return ocurrency;
+  return ocurrency.map((ocurrency) => {
+    return ocurrency.toObject();
+  });
 };
 
 const GetUserOccurrecies = async (userId: string) => {
@@ -21,7 +23,9 @@ const GetUserOccurrecies = async (userId: string) => {
   const ocurrency = await Ocurrency.find({
     userId: userId
   });
-  return ocurrency;
+  return ocurrency.map((ocurrency) => {
+    return ocurrency.toObject();
+  });
 };
 
 const CreateOcurrency = async (ocurrencyData: IOcurrency) => {
@@ -40,22 +44,22 @@ const CreateOcurrency = async (ocurrencyData: IOcurrency) => {
     },
     public: ocurrencyData.public
   });
-  return newOcurrency;
+  return newOcurrency.toObject();
 };
 
-const UpdateOcurrency = (id: string, newData: Partial<IOcurrency>) => {
+const UpdateOcurrency = async (id: string, newData: Partial<IOcurrency>) => {
   if (!id) {
     throw new BadRequestError('Ocurrency id is required');
   }
-  const ocurrency = Ocurrency.findById(id);
+  const ocurrency = await Ocurrency.findById(id);
   if (!ocurrency) {
     throw new NotFoundError('Ocurrency not found');
   }
-  const updatedOcurrency = ocurrency.updateOne(newData);
+  const updatedOcurrency = await ocurrency.updateOne(newData);
   if (!updatedOcurrency) {
     throw new BadRequestError('Ocurrency not updated');
   }
-  return updatedOcurrency;
+  return updatedOcurrency.toObject();
 };
 
 const DeleteOcurrency = async (id: string) => {

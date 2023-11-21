@@ -26,7 +26,7 @@ const findUser = async (email: string) => {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password, ...userWithoutPassword } = user;
+  const { password, ...userWithoutPassword } = user.toObject();
   return userWithoutPassword;
 };
 
@@ -51,7 +51,7 @@ const createUser = async (user: IUser) => {
     throw new InternalServerError('Error creating user');
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password, ...userWithoutPassword } = createdUser;
+  const { password, ...userWithoutPassword } = createdUser.toObject();
   const token = generateToken({ email: user.email });
   return { user: { ...userWithoutPassword }, token };
 };
@@ -68,7 +68,7 @@ const updateUser = async (email: string, userData: Partial<IUser>) => {
     throw new InternalServerError('Error updating user');
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password, ...userWithoutPassword } = updatedUser;
+  const { password, ...userWithoutPassword } = updatedUser.toObject();
 
   return userWithoutPassword;
 };
