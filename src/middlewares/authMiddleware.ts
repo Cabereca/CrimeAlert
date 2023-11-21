@@ -23,7 +23,7 @@ export const authMiddleware = async (
     throw new NotFoundError('User not Found');
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password, ...userWithoutPassword } = user;
+  const { password, ...userWithoutPassword } = user.toObject();
   req.user = userWithoutPassword;
   next();
 };

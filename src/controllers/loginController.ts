@@ -18,7 +18,7 @@ const login = async (req: Request, res: Response) => {
   }
   const token = generateToken({ email });
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password: _, ...userWithoutPassword } = user;
+  const { password: _, ...userWithoutPassword } = user.toObject();
 
   return res.send({
     userWithoutPassword,
