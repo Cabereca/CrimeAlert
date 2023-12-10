@@ -118,4 +118,55 @@ body button {
 
 .logo {
   margin-right: 30vw;
-} /*# sourceMappingURL=main.css.map */
+}
+
+@media (max-width: 1024px) {
+  .container-form {
+    width: 40vw;
+  }
+  .logo {
+    margin-right: 25vw;
+  }
+  .logo img {
+    width: 70%;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    position: relative;
+  }
+  .container-form {
+    width: 50vw;
+    height: 50vh;
+    border-radius: 15px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .logo {
+    display: none;
+  }
+}
+
+@media (max-width: 500px) {
+  .container-form {
+    width: 80vw;
+    height: 50vh;
+  }
+  .form h2 {
+    font-size: 2rem;
+  }
+  .form label {
+    font-size: 1.2rem;
+  }
+  .form input {
+    font-size: 1.2rem;
+  }
+  .form button {
+    font-size: 1.2rem;
+  }
+}
+
+/*# sourceMappingURL=main.css.map */
