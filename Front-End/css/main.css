@@ -137,13 +137,16 @@ body button {
     position: relative;
   }
   .container-form {
-    width: 50vw;
-    height: 50vh;
+    width: 60vw;
+    height: 80vh;
     border-radius: 15px;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+  }
+  .form h2 {
+    font-size: 5rem;
   }
   .logo {
     display: none;
@@ -153,10 +156,10 @@ body button {
 @media (max-width: 500px) {
   .container-form {
     width: 80vw;
-    height: 50vh;
+    height: 80vh;
   }
   .form h2 {
-    font-size: 2rem;
+    font-size: 4rem;
   }
   .form label {
     font-size: 1.2rem;
