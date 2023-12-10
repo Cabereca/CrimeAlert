@@ -51,10 +51,16 @@ const login = async (email, password) => {
     .then((data) => {
       console.log(data);
       if (data.token) {
+        iziToast.success({
+          title: 'Login realizado com sucesso'
+        });
         createCookie(data.token);
         window.location.href = './html/home.html';
       } else {
-        alert(data.message);
+        iziToast.error({
+          title: 'Erro ao fazer login',
+          message: data.message
+        });
       }
     });
 };
