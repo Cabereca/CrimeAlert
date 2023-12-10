@@ -21,9 +21,10 @@ const loginButton = document.getElementById('signin');
 
 loginButton?.addEventListener('click', async (e) => {
   e.preventDefault();
+  isLoading = true;
   const email = document.getElementById('email').value;
   const password = document.getElementById('senha').value;
-  isLoading = true;
+  loginButton.disabled = isLoading;
   loginButton.replaceChildren(loadSpinner);
   await login(email, password)
     .then(() => {
@@ -33,6 +34,10 @@ loginButton?.addEventListener('click', async (e) => {
     .catch(() => {
       isLoading = false;
       loginButton.replaceChildren('Entrar');
+    })
+    .finally(() => {
+      isLoading = false;
+      loginButton.disabled = isLoading;
     });
 });
 
