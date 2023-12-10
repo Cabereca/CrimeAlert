@@ -21,7 +21,20 @@ let location = {
   coordinates: []
 };
 
+const loadSpinner = document.createElement('div');
+loadSpinner.className = 'lds-ring';
+loadSpinner.innerHTML = `
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+`;
+
+let isDone = false;
+
 addOcorrencia?.addEventListener('click', async (e) => {
+  addOcorrencia.disabled = isDone;
+  addOcorrencia.replaceChildren(loadSpinner);
   e.preventDefault();
   const isPublic = status.value === 'publica';
   const { _id, token } = await findUserId();
@@ -45,12 +58,21 @@ addOcorrencia?.addEventListener('click', async (e) => {
   await fetch('http://localhost:3000/ocurrency', options)
     .then((response) => response.json())
     .then((data) => {
+      isDone = true;
       if (data.message) {
-        alert(data.message);
+        iziToast.error({
+          title: 'Erro ao cadastrar ocorrência',
+          message: data.message
+        });
+        addOcorrencia.disabled = isDone;
       } else {
         alert('Ocorrência cadastrada com sucesso!');
         window.location.href = './home.html';
+        addOcorrencia.disabled = isDone;
       }
+    })
+    .finally(() => {
+      addOcorrencia.replaceChildren('Adicionar');
     });
 });
 
