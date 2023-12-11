@@ -22,7 +22,7 @@ let location = {
 };
 
 const loadSpinner = document.createElement('div');
-loadSpinner.className = 'lds-ring';
+loadSpinner.className = 'lds-ellipsis';
 loadSpinner.innerHTML = `
   <div></div>
   <div></div>
@@ -65,10 +65,17 @@ addOcorrencia?.addEventListener('click', async (e) => {
           message: data.message
         });
         addOcorrencia.disabled = isDone;
+        setTimeout(() => {
+          window.location.href = './home.html';
+        }, 2500);
       } else {
-        alert('Ocorrência cadastrada com sucesso!');
-        window.location.href = './home.html';
+        iziToast.success({
+          title: 'Ocorrência cadastrada com sucesso!'
+        });
         addOcorrencia.disabled = isDone;
+        setTimeout(() => {
+          window.location.href = './home.html';
+        }, 2500);
       }
     })
     .finally(() => {
