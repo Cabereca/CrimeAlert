@@ -3,22 +3,35 @@ import { User } from '../models/User';
 import { NotFoundError, UnauthorizedError } from '../helpers/api-errors';
 import bcrypt from 'bcrypt';
 import { generateToken } from '../services/userServices';
+import client from '../database/redis';
 
 const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  const user = await User.findOne({
-    email: email
-  });
-  if (!user) {
-    throw new NotFoundError('Usuário não encontrado');
+
+  let user;
+  let cache = await client.get(email);
+  if (cache) {
+    console.log('cache');
+
+    user = JSON.parse(cache);
+  } else {
+    console.log('db');
+    user = await User.findOne({
+      email
+    });
+    if (!user) {
+      throw new NotFoundError('User not Found');
+    }
+    await client.set(email, JSON.stringify(user.toObject()));
   }
   const verifyPassword = await bcrypt.compare(password, user.password);
   if (!verifyPassword) {
     throw new UnauthorizedError('Usuário ou senha incorretos');
   }
   const token = generateToken({ email });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password: _, ...userWithoutPassword } = user.toObject();
+  const { password: _, ...userWithoutPassword } = cache
+    ? user
+    : user.toObject();
 
   return res.send({
     userWithoutPassword,
