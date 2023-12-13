@@ -6,14 +6,16 @@ import { User } from '../models/User';
 
 const getPublicOccurrecies = async () => {
   const key = `public`;
-  const cachedOcurrency = await client.get(key);
+  const cachedOcurrency = await client.lRange(key, 0, -1)
   if (cachedOcurrency) {
-    return JSON.parse(cachedOcurrency);
+    cachedOcurrency.map((ocurrency) => {
+      return JSON.parse(ocurrency);
+    });
   }
   const ocurrency = await Ocurrency.find({
     public: true
   });
-  await client.set(key, JSON.stringify(ocurrency));
+  await client.rPush(key, JSON.stringify(ocurrency));
   return ocurrency.map((ocurrency) => {
     return ocurrency.toObject();
   });
@@ -24,19 +26,21 @@ const getUserOccurrecies = async (userId: string) => {
     throw new BadRequestError('User id is required');
   }
   const key = `user:${userId}`;
-  const cachedOcurrency = await client.get(key);
+  const cachedOcurrency = await client.lRange(key, 0, -1)
   if (cachedOcurrency) {
-    return JSON.parse(cachedOcurrency);
+    cachedOcurrency.map((ocurrency) => {
+      return JSON.parse(ocurrency);
+    });
   }
   const user = await User.findById(userId);
   if (!user) {
     throw new NotFoundError('User not found');
   }
-  const ocurrency = await Ocurrency.find({
+  const ocurrencies = await Ocurrency.find({
     userId: userId
   });
-  await client.set(key, JSON.stringify(ocurrency));
-  return ocurrency.map((ocurrency) => {
+  await client.rPush(key, JSON.stringify(ocurrencies));
+  return ocurrencies.map((ocurrency) => {
     return ocurrency.toObject();
   });
 };
@@ -60,16 +64,10 @@ const createOcurrency = async (ocurrencyData: IOcurrency) => {
   if (!newOcurrency) {
     throw new BadRequestError('Ocurrency not created');
   }
-  const cachedPrivateOcurrency = await client.get(`user:${ocurrencyData.userId}`);
-  if (newOcurrency.public) {
-    const cachedPublicOcurrency = await client.get(`public`);
-    const parsedCachedPublicOcurrency = JSON.parse(cachedPublicOcurrency as string);
-    parsedCachedPublicOcurrency.push(newOcurrency.toObject());
-    await client.set(`public`, JSON.stringify(parsedCachedPublicOcurrency));
+  if (ocurrencyData.public) {
+    await client.rPush('public', JSON.stringify(newOcurrency.toObject()));
   }
-  const cachedPrivateOcurrencyParsed = JSON.parse(cachedPrivateOcurrency as string);
-  cachedPrivateOcurrencyParsed.push(newOcurrency.toObject());
-  await client.set(`user:${ocurrencyData.userId}`, JSON.stringify(cachedPrivateOcurrencyParsed));
+  await client.rPush(`user:${ocurrencyData.userId}`, JSON.stringify(newOcurrency.toObject()));
   return newOcurrency.toObject();
 };
 
@@ -85,20 +83,23 @@ const updateOcurrency = async (id: string, newData: Partial<IOcurrency>) => {
   if (!updatedOcurrency) {
     throw new BadRequestError('Ocurrency not updated');
   }
-  const cachedPrivateOcurrency = await client.get(`user:${ocurrency.userId}`);
-  if (ocurrency.public) {
-    const cachedPublicOcurrency = await client.get(`public`);
-    const parsedCachedPublicOcurrency = JSON.parse(cachedPublicOcurrency as string);
-    const index = parsedCachedPublicOcurrency.findIndex((o: any) => o._id === id);
-    parsedCachedPublicOcurrency.splice(index, 1);
-    parsedCachedPublicOcurrency.push(updatedOcurrency.toObject());
-    await client.set(`public`, JSON.stringify(parsedCachedPublicOcurrency));
+  if (updatedOcurrency.public && ocurrency.public) {
+    await client.lRem('public', 0, JSON.stringify(ocurrency.toObject()));
+    await client.lRem(`user:${ocurrency.userId}`, 0, JSON.stringify(ocurrency.toObject()));
+    await client.rPush('public', JSON.stringify(updatedOcurrency.toObject()));
+    await client.rPush(`user:${ocurrency.userId}`, JSON.stringify(updatedOcurrency.toObject()));
+  } else if (updatedOcurrency.public && !ocurrency.public) {
+    await client.lRem(`user:${ocurrency.userId}`, 0, JSON.stringify(ocurrency.toObject()));
+    await client.rPush(`user:${ocurrency.userId}`, JSON.stringify(updatedOcurrency.toObject()));
+    await client.rPush('public', JSON.stringify(updatedOcurrency.toObject()));
+  } else if (!updatedOcurrency.public && ocurrency.public) {
+    await client.lRem('public', 0, JSON.stringify(ocurrency.toObject()));
+    await client.lRem(`user:${ocurrency.userId}`, 0, JSON.stringify(ocurrency.toObject()));
+    await client.rPush(`user:${ocurrency.userId}`, JSON.stringify(updatedOcurrency.toObject()));
+  } else {
+    await client.lRem(`user:${ocurrency.userId}`, 0, JSON.stringify(ocurrency.toObject()));
+    await client.rPush(`user:${ocurrency.userId}`, JSON.stringify(updatedOcurrency.toObject()));
   }
-  const cachedPrivateOcurrencyParsed = JSON.parse(cachedPrivateOcurrency as string);
-  const index = cachedPrivateOcurrencyParsed.findIndex((o: any) => o._id === id);
-  cachedPrivateOcurrencyParsed.splice(index, 1);
-  cachedPrivateOcurrencyParsed.push(updatedOcurrency.toObject());
-  await client.set(`user:${ocurrency.userId}`, JSON.stringify(cachedPrivateOcurrencyParsed));
   return updatedOcurrency.toObject();
 };
 
@@ -114,18 +115,10 @@ const deleteOcurrency = async (id: string) => {
   if (!deletedOcurrency) {
     throw new BadRequestError('Ocurrency not deleted');
   }
-  const cachedPrivateOcurrency = await client.get(`user:${ocurrency.userId}`);
   if (ocurrency.public) {
-    const cachedPublicOcurrency = await client.get(`public`);
-    const parsedCachedPublicOcurrency = JSON.parse(cachedPublicOcurrency as string);
-    const index = parsedCachedPublicOcurrency.findIndex((o: any) => o._id === id);
-    parsedCachedPublicOcurrency.splice(index, 1);
-    await client.set(`public`, JSON.stringify(parsedCachedPublicOcurrency));
+    await client.lRem('public', 0, JSON.stringify(ocurrency.toObject()));
   }
-  const cachedPrivateOcurrencyParsed = JSON.parse(cachedPrivateOcurrency as string);
-  const index = cachedPrivateOcurrencyParsed.findIndex((o: any) => o._id === id);
-  cachedPrivateOcurrencyParsed.splice(index, 1);
-  await client.set(`user:${ocurrency.userId}`, JSON.stringify(cachedPrivateOcurrencyParsed));
+  await client.lRem(`user:${ocurrency.userId}`, 0, JSON.stringify(ocurrency.toObject()));
   return;
 };
 
